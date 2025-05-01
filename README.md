@@ -1,28 +1,34 @@
 # Marketplace API
 
-A RESTful API service for a marketplace application, built with Node.js, Express, and MongoDB.
+A robust e-commerce API built with Node.js, Express, and MongoDB. This API provides endpoints for managing products, categories, and banners in a marketplace application.
 
 ## Features
 
-- RESTful API endpoints for marketplace data
-- MongoDB database integration
-- Rate limiting and security middleware
-- Comprehensive error handling
-- Logging with Winston
-- Environment-based configuration
-- Health check endpoint
+- 🛍️ Product Management
+- 📦 Category Management
+- 🎯 Banner Management
+- 🔍 Advanced Search & Filtering
+- 📊 Pagination
+- 🔒 Rate Limiting
+- ✅ Input Validation
+- 📝 Logging
+- 🐳 Docker Support
+- 🚀 Deployment Ready
 
 ## Prerequisites
 
-- Node.js >= 18.0.0
-- MongoDB >= 4.4
+- Node.js (v20 or higher)
+- MongoDB (v6 or higher)
 - npm or yarn
+- Docker (optional)
 
 ## Installation
 
+### Local Development
+
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/yourusername/marketplace.git
 cd marketplace
 ```
 
@@ -30,70 +36,178 @@ cd marketplace
 ```bash
 npm install
 ```
-`
-3. Create a `.env` file:
-```bash
-cp .env.sample .env
+
+3. Create a `.env` file in the root directory:
+```env
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+API_VERSION=v1
+API_PREFIX=/api
+
+# MongoDB Configuration
+MONGODB_URI=mongodb://localhost:27017/marketplace
+MONGODB_USERNAME=
+MONGODB_PASSWORD=
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes
+RATE_LIMIT_MAX_REQUESTS=100
+
+# Logging
+LOG_LEVEL=info
+LOG_FILE=logs/app.log
 ```
 
-4. Update the `.env` file with your configuration.
-
-## Development
-
-Start the development server:
+4. Start MongoDB:
 ```bash
+# On macOS with Homebrew
+brew services start mongodb/brew/mongodb-community
+
+# On Ubuntu/Debian
+sudo service mongod start
+```
+
+5. Run the application:
+```bash
+# Development mode
 npm run dev
-```
 
-## Production
-
-Start the production server:
-```bash
+# Production mode
 npm start
 ```
 
-## Testing
+### Docker
 
-Run tests:
+1. Build the Docker image:
 ```bash
-npm test
+docker build -t marketplace-api .
 ```
 
-Run tests with coverage:
+2. Run the container:
 ```bash
-npm run test:coverage
+docker run -p 3000:3000 \
+  -e MONGODB_URI=mongodb://host.docker.internal:27017/marketplace \
+  -e NODE_ENV=production \
+  marketplace-api
 ```
 
-## API Endpoints
+## API Documentation
 
-- `GET /health` - Health check endpoint
-- `GET /api/categories/featured` - Get featured categories
-- `GET /api/products/trending` - Get trending products
-- `GET /api/products/best-selling` - Get best-selling products
-- `GET /api/banners` - Get homepage banners
+### Base URL
+```
+http://localhost:3000/api/v1
+```
 
-## Project Structure
+### Endpoints
+
+#### Categories
+
+- `GET /categories` - Get all categories
+- `GET /categories/featured` - Get featured categories
+- `GET /categories/:id` - Get category by ID
+- `POST /categories` - Create a new category
+- `PUT /categories/:id` - Update a category
+- `DELETE /categories/:id` - Delete a category
+
+#### Products
+
+- `GET /products` - Get all products with pagination
+- `GET /products/trending` - Get trending products
+- `GET /products/best-selling` - Get best-selling products
+- `GET /products/:id` - Get product by ID
+- `POST /products` - Create a new product
+- `PUT /products/:id` - Update a product
+- `DELETE /products/:id` - Delete a product
+
+#### Banners
+
+- `GET /banners` - Get all active banners
+- `GET /banners/:id` - Get banner by ID
+- `POST /banners` - Create a new banner
+- `PUT /banners/:id` - Update a banner
+- `DELETE /banners/:id` - Delete a banner
+
+### Query Parameters
+
+#### Products
+
+- `page` - Page number (default: 1)
+- `limit` - Items per page (default: 10, max: 100)
+- `sort` - Sort field (e.g., price, rating)
+- `minPrice` - Minimum price
+- `maxPrice` - Maximum price
+- `rating` - Minimum rating
+- `tags` - Product tags
+- `category` - Category ID
+- `search` - Search term
+
+### Response Format
+
+```json
+{
+  "status": "success",
+  "pagination": {
+    "total": 100,
+    "totalPages": 10,
+    "currentPage": 1,
+    "hasNextPage": true,
+    "hasPrevPage": false,
+    "nextPage": 2,
+    "prevPage": null
+  },
+  "data": {
+    // Response data
+  }
+}
+```
+
+## Deployment
+
+### Render
+
+1. Create a new Web Service on Render
+2. Connect your GitHub repository
+3. Configure the following environment variables:
+   - `MONGODB_URI`
+   - `NODE_ENV=production`
+   - `PORT=3000`
+4. Deploy!
+
+### Docker
+
+1. Build and push the Docker image:
+```bash
+docker build -t yourusername/marketplace-api .
+docker push yourusername/marketplace-api
+```
+
+2. Deploy to your preferred container platform (e.g., Kubernetes, AWS ECS)
+
+## Development
+
+### Project Structure
 
 ```
-marketplace/
-├── src/                         # Main application source code
-│   ├── config/                  # Configuration settings
-│   ├── models/                  # Mongoose schemas and models
-│   ├── controllers/             # Route logic handlers
-│   ├── services/                # Business logic layer
-│   ├── routes/                  # Express route definitions
-│   ├── middleware/              # Express middlewares
-│   ├── validators/              # Zod schemas for validation
-│   ├── utils/                   # Utilities and helpers
-│   ├── app.js                   # Initialize app, middleware, routes
-│   └── server.js                # Entry point - starts server
-├── tests/                       # Jest test files
-├── .env                         # Environment variables
-├── .env.sample                  # Sample env file
-├── .gitignore
-├── package.json
-└── README.md
+src/
+├── config/         # Configuration files
+├── controllers/    # Route controllers
+├── middleware/     # Custom middleware
+├── models/         # Mongoose models
+├── routes/         # API routes
+├── utils/          # Utility functions
+├── data/           # Seed data
+├── app.js          # Express application
+└── server.js       # Server entry point
 ```
+
+### Scripts
+
+- `npm run dev` - Start development server with nodemon
+- `npm start` - Start production server
+- `npm run seed` - Seed the database with sample data
+- `npm run lint` - Run ESLint
+- `npm run test` - Run tests
 
 ## Contributing
 
@@ -105,4 +219,8 @@ marketplace/
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+For support, email support@example.com or create an issue in the repository. 
