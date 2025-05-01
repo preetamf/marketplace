@@ -1,18 +1,12 @@
-const dotenv = require('dotenv');
-const productionConfig = require('./production');
-
-// Load environment variables
-dotenv.config();
-
 const config = {
 	// Server Configuration
-	port: process.env.PORT || 3001,
-	nodeEnv: process.env.NODE_ENV || 'development',
+	port: process.env.PORT || 3000,
+	nodeEnv: 'production',
 	apiVersion: process.env.API_VERSION || 'v1',
 
 	// MongoDB Configuration
 	mongodb: {
-		uri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/marketplace',
+		uri: process.env.MONGODB_URI || 'mongodb://mongodb:27017/marketplace',
 		options: {
 			serverSelectionTimeoutMS: 5000,
 			socketTimeoutMS: 45000,
@@ -21,14 +15,14 @@ const config = {
 
 	// Rate Limiting
 	rateLimit: {
-		windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
+		windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000,
 		max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
 		message: 'Too many requests from this IP, please try again later',
 	},
 
 	// Logging
 	logging: {
-		level: process.env.LOG_LEVEL || 'info',
+		level: 'error',
 		filePath: process.env.LOG_FILE_PATH || 'logs/app.log',
 		maxSize: 5242880, // 5MB
 		maxFiles: 5,
@@ -36,10 +30,10 @@ const config = {
 
 	// Security
 	security: {
-		jwtSecret: process.env.JWT_SECRET || 'your-secret-key',
+		jwtSecret: process.env.JWT_SECRET || 'your-production-secret-key',
 		jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',
 		corsOptions: {
-			origin: process.env.CORS_ORIGIN || '*',
+			origin: process.env.CORS_ORIGIN || 'https://marketplace-zra7.onrender.com',
 			methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
 			allowedHeaders: ['Content-Type', 'Authorization'],
 		},
@@ -48,10 +42,9 @@ const config = {
 	// API
 	api: {
 		prefix: '/api',
-		timeout: 30000, // 30 seconds
-		maxBodySize: '10mb',
+		timeout: parseInt(process.env.API_TIMEOUT) || 30000,
+		maxBodySize: process.env.API_MAX_BODY_SIZE || '10mb',
 	},
 };
 
-// Use production config in production environment
-module.exports = process.env.NODE_ENV === 'production' ? productionConfig : config; 
+module.exports = config; 

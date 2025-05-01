@@ -14,6 +14,9 @@ A robust e-commerce API built with Node.js, Express, and MongoDB. This API provi
 - 📝 Logging
 - 🐳 Docker Support
 - 🚀 Deployment Ready
+- 🏥 Health Checks
+- 🔄 Auto-Restart
+- 📈 Monitoring Ready
 
 ## Prerequisites
 
@@ -21,6 +24,7 @@ A robust e-commerce API built with Node.js, Express, and MongoDB. This API provi
 - MongoDB (v6 or higher)
 - npm or yarn
 - Docker (optional)
+- Docker Compose (optional)
 
 ## Installation
 
@@ -77,19 +81,33 @@ npm run dev
 npm start
 ```
 
-### Docker
+### Docker Development
 
-1. Build the Docker image:
+1. Build and start the containers:
 ```bash
-docker build -t marketplace-api .
+docker-compose up
 ```
 
-2. Run the container:
+2. Access the API:
+```
+http://localhost:3000/api/v1/health
+```
+
+### Docker Production
+
+1. Build and start the production containers:
 ```bash
-docker run -p 3000:3000 \
-  -e MONGODB_URI=mongodb://host.docker.internal:27017/marketplace \
-  -e NODE_ENV=production \
-  marketplace-api
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+2. Check the logs:
+```bash
+docker-compose logs -f
+```
+
+3. Monitor the health:
+```bash
+curl http://localhost:3000/api/v1/health
 ```
 
 ## API Documentation
@@ -97,6 +115,24 @@ docker run -p 3000:3000 \
 ### Base URL
 ```
 http://localhost:3000/api/v1
+```
+
+### Health Check
+```
+GET /health
+```
+
+Response:
+```json
+{
+  "status": "success",
+  "message": "API is healthy",
+  "timestamp": "2024-03-21T12:00:00.000Z",
+  "uptime": 1234.56,
+  "database": "connected",
+  "version": "1.0.0",
+  "environment": "production"
+}
 ```
 
 ### Endpoints
@@ -208,6 +244,14 @@ src/
 - `npm run seed` - Seed the database with sample data
 - `npm run lint` - Run ESLint
 - `npm run test` - Run tests
+
+## Monitoring
+
+The API includes built-in health checks and logging. For production monitoring:
+
+1. Health Check Endpoint: `/api/v1/health`
+2. Logs: Located in `logs/app.log`
+3. Metrics: Available through the health check endpoint
 
 ## Contributing
 

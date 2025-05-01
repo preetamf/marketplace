@@ -1,6 +1,9 @@
 # Use Node.js LTS version
 FROM node:20-alpine
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 # Set working directory
 WORKDIR /app
 
@@ -8,13 +11,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --only=production
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Create logs directory
+RUN mkdir -p logs
 
 # Expose the port
 EXPOSE 3000
