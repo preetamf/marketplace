@@ -5,13 +5,10 @@ const config = require('../config/config');
 const { combine, timestamp, printf, colorize, errors, json } = winston.format;
 
 // Custom format for console output
-const consoleFormat = printf(({ level, message, timestamp, stack, ...metadata }) => {
+const consoleFormat = printf(({ level, message, timestamp, stack }) => {
 	let msg = `${timestamp} [${level}]: ${message}`;
 	if (stack) {
 		msg += `\n${stack}`;
-	}
-	if (Object.keys(metadata).length > 0) {
-		msg += `\n${JSON.stringify(metadata, null, 2)}`;
 	}
 	return msg;
 });
@@ -26,7 +23,6 @@ const fileFormat = combine(
 const logger = winston.createLogger({
 	level: config.logging.level,
 	format: fileFormat,
-	defaultMeta: { service: 'marketplace-api' },
 	transports: [
 		// File transport for all logs
 		new winston.transports.File({

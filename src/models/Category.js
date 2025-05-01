@@ -7,13 +7,11 @@ const categorySchema = new mongoose.Schema(
 			type: String,
 			required: [true, 'Category name is required'],
 			trim: true,
-			unique: true,
 			maxlength: [50, 'Category name cannot be more than 50 characters'],
 			minlength: [2, 'Category name must be at least 2 characters long'],
 		},
 		slug: {
 			type: String,
-			unique: true,
 		},
 		description: {
 			type: String,
@@ -44,7 +42,6 @@ const categorySchema = new mongoose.Schema(
 		},
 		path: {
 			type: String,
-			index: true,
 		},
 		level: {
 			type: Number,
@@ -132,8 +129,8 @@ categorySchema.pre('save', async function (next) {
 });
 
 // Indexes
-categorySchema.index({ name: 1 });
-categorySchema.index({ slug: 1 });
+categorySchema.index({ name: 1 }, { unique: true });
+categorySchema.index({ slug: 1 }, { unique: true });
 categorySchema.index({ parent: 1 });
 categorySchema.index({ path: 1 });
 categorySchema.index({ level: 1 });

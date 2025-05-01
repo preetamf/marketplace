@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 const bannerSchema = new mongoose.Schema(
 	{
 		title: {
 			type: String,
-			required: [true, 'Banner title is required'],
+			required: [true, 'Please provide a title'],
 			trim: true,
 			maxlength: [100, 'Title cannot be more than 100 characters'],
 		},
@@ -20,49 +21,44 @@ const bannerSchema = new mongoose.Schema(
 		},
 		imageUrl: {
 			type: String,
-			required: [true, 'Image URL is required'],
-			validate: {
-				validator: function (v) {
-					return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(v);
-				},
-				message: 'Please provide a valid image URL',
-			},
+			required: [true, 'Please provide an image URL'],
+			trim: true,
 		},
 		mobileImageUrl: {
 			type: String,
-			validate: {
-				validator: function (v) {
-					return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(v);
-				},
-				message: 'Please provide a valid image URL',
-			},
+			trim: true,
 		},
 		link: {
 			type: String,
+			required: [true, 'Please provide a link'],
+			trim: true,
 			validate: {
 				validator: function (v) {
-					return /^https?:\/\/.+$/i.test(v);
+					// Allow both absolute URLs and relative paths
+					return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(v) || /^\/[a-zA-Z0-9-_/]+$/.test(v);
 				},
-				message: 'Please provide a valid URL',
+				message: 'Please provide a valid URL or relative path',
 			},
 		},
 		position: {
 			type: Number,
-			required: [true, 'Banner position is required'],
+			required: [true, 'Please provide a position'],
 			min: [1, 'Position must be at least 1'],
 		},
 		targetDevice: {
 			type: String,
-			enum: ['desktop', 'mobile', 'all'],
+			enum: ['all', 'desktop', 'mobile'],
 			default: 'all',
 		},
 		backgroundColor: {
 			type: String,
-			match: [/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid hex color code'],
+			trim: true,
+			default: '#FFFFFF',
 		},
 		textColor: {
 			type: String,
-			match: [/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid hex color code'],
+			trim: true,
+			default: '#000000',
 		},
 		buttonText: {
 			type: String,
@@ -71,15 +67,15 @@ const bannerSchema = new mongoose.Schema(
 		},
 		buttonColor: {
 			type: String,
-			match: [/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid hex color code'],
+			trim: true,
 		},
 		buttonTextColor: {
 			type: String,
-			match: [/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid hex color code'],
+			trim: true,
 		},
 		status: {
 			type: String,
-			enum: ['active', 'inactive', 'scheduled', 'expired'],
+			enum: ['active', 'inactive', 'scheduled'],
 			default: 'active',
 		},
 		startDate: {
@@ -88,53 +84,52 @@ const bannerSchema = new mongoose.Schema(
 		},
 		endDate: {
 			type: Date,
-			validate: {
-				validator: function (v) {
-					return v > this.startDate;
-				},
-				message: 'End date must be after start date',
-			},
 		},
 		displayRules: {
-			showOnHomepage: { type: Boolean, default: true },
-			showOnCategory: { type: Boolean, default: false },
-			showOnProduct: { type: Boolean, default: false },
-			showOnCart: { type: Boolean, default: false },
-			showOnCheckout: { type: Boolean, default: false },
+			showOnHomepage: {
+				type: Boolean,
+				default: true,
+			},
+			showOnCategory: {
+				type: Boolean,
+				default: false,
+			},
+			showOnProduct: {
+				type: Boolean,
+				default: false,
+			},
+			showOnCart: {
+				type: Boolean,
+				default: false,
+			},
+			showOnCheckout: {
+				type: Boolean,
+				default: false,
+			},
 		},
-		targetCategories: [{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Category',
-		}],
-		targetProducts: [{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Product',
-		}],
-		clicks: {
-			type: Number,
-			default: 0,
-		},
-		impressions: {
-			type: Number,
-			default: 0,
-		},
+		targetCategories: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: 'Category',
+			},
+		],
+		targetProducts: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: 'Product',
+			},
+		],
 		metaTitle: {
 			type: String,
-			maxlength: [60, 'Meta title cannot exceed 60 characters'],
+			trim: true,
+			maxlength: [60, 'Meta title cannot be more than 60 characters'],
 		},
 		metaDescription: {
 			type: String,
-			maxlength: [160, 'Meta description cannot exceed 160 characters'],
+			trim: true,
+			maxlength: [160, 'Meta description cannot be more than 160 characters'],
 		},
 		metaKeywords: [String],
-		createdBy: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'User',
-		},
-		updatedBy: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'User',
-		},
 	},
 	{
 		timestamps: true,
@@ -143,53 +138,26 @@ const bannerSchema = new mongoose.Schema(
 	}
 );
 
-// Indexes
-bannerSchema.index({ position: 1 });
-bannerSchema.index({ status: 1 });
-bannerSchema.index({ startDate: 1 });
-bannerSchema.index({ endDate: 1 });
-bannerSchema.index({ targetDevice: 1 });
-bannerSchema.index({ 'displayRules.showOnHomepage': 1 });
-bannerSchema.index({ 'displayRules.showOnCategory': 1 });
-bannerSchema.index({ 'displayRules.showOnProduct': 1 });
-bannerSchema.index({ targetCategories: 1 });
-bannerSchema.index({ targetProducts: 1 });
+// Create slug from title
+bannerSchema.pre('save', function (next) {
+	this.slug = slugify(this.title, { lower: true });
+	next();
+});
 
-// Virtual for active status
+// Add virtual for isActive
 bannerSchema.virtual('isActive').get(function () {
 	const now = new Date();
 	return (
 		this.status === 'active' &&
-		now >= this.startDate &&
-		(!this.endDate || now <= this.endDate)
+		(!this.startDate || this.startDate <= now) &&
+		(!this.endDate || this.endDate >= now)
 	);
 });
 
-// Virtual for click-through rate
-bannerSchema.virtual('ctr').get(function () {
-	if (this.impressions === 0) return 0;
-	return (this.clicks / this.impressions) * 100;
-});
-
-// Virtual for remaining time
-bannerSchema.virtual('remainingTime').get(function () {
-	if (!this.endDate) return null;
-	const now = new Date();
-	const remaining = this.endDate - now;
-	return remaining > 0 ? remaining : 0;
-});
-
-// Method to increment impressions
-bannerSchema.methods.incrementImpressions = function () {
-	this.impressions += 1;
-	return this.save();
-};
-
-// Method to increment clicks
-bannerSchema.methods.incrementClicks = function () {
-	this.clicks += 1;
-	return this.save();
-};
+// Add indexes
+bannerSchema.index({ status: 1, startDate: 1, endDate: 1 });
+bannerSchema.index({ position: 1 });
+bannerSchema.index({ targetDevice: 1 });
 
 const Banner = mongoose.model('Banner', bannerSchema);
 

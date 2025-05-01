@@ -12,12 +12,10 @@ const productSchema = new mongoose.Schema(
 		},
 		slug: {
 			type: String,
-			unique: true,
 		},
 		sku: {
 			type: String,
 			required: [true, 'SKU is required'],
-			unique: true,
 			match: [/^[A-Z0-9-]+$/, 'SKU must be uppercase alphanumeric with dashes'],
 		},
 		description: {
@@ -174,8 +172,8 @@ productSchema.pre('save', function (next) {
 
 // Indexes
 productSchema.index({ name: 1 });
-productSchema.index({ slug: 1 });
-productSchema.index({ sku: 1 });
+productSchema.index({ slug: 1 }, { unique: true });
+productSchema.index({ sku: 1 }, { unique: true });
 productSchema.index({ category: 1 });
 productSchema.index({ subCategories: 1 });
 productSchema.index({ brand: 1 });

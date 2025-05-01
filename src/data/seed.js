@@ -7,9 +7,11 @@ const config = require('../config/config');
 
 const seedDatabase = async () => {
 	try {
-		// Connect to MongoDB
-		await mongoose.connect(config.mongodb.uri, config.mongodb.options);
-		logger.info('Connected to MongoDB for seeding');
+		// Connect to MongoDB if not already connected
+		if (mongoose.connection.readyState !== 1) {
+			await mongoose.connect(config.mongodb.uri, config.mongodb.options);
+			logger.info('Connected to MongoDB for seeding');
+		}
 
 		// Clear existing data
 		await Promise.all([
@@ -321,12 +323,26 @@ const seedDatabase = async () => {
 		]);
 
 		logger.info('Database seeded successfully');
-		process.exit(0);
+
+		// Only exit if called directly from command line
+		if (require.main === module) {
+			process.exit(0);
+		}
 	} catch (error) {
 		logger.error('Error seeding database:', error);
-		process.exit(1);
+		
+		// Only exit if called directly from command line
+		if (require.main === module) {
+			process.exit(1);
+		} else {
+			throw error;
+		}
 	}
 };
 
-// Run the seed script
-seedDatabase(); 
+// Export the function
+module.exports = seedDatabase;
+
+// Run the seed script if called directly
+if (require.main === module) {
+	seedDatabase(); }

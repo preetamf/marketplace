@@ -5,18 +5,14 @@ dotenv.config();
 
 const config = {
 	// Server Configuration
-	port: process.env.PORT || 3000,
+	port: process.env.PORT || 3001,
 	nodeEnv: process.env.NODE_ENV || 'development',
 	apiVersion: process.env.API_VERSION || 'v1',
 
 	// MongoDB Configuration
 	mongodb: {
-		uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/marketplace',
-		username: process.env.MONGODB_USERNAME,
-		password: process.env.MONGODB_PASSWORD,
+		uri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/marketplace',
 		options: {
-			useNewUrlParser: true,
-			useUnifiedTopology: true,
 			serverSelectionTimeoutMS: 5000,
 			socketTimeoutMS: 45000,
 		},

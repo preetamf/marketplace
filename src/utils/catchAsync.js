@@ -7,17 +7,7 @@ const AppError = require('./AppError');
  */
 const catchAsync = (fn) => {
 	return (req, res, next) => {
-		Promise.resolve(fn(req, res, next)).catch((err) => {
-			// If the error is not an AppError, wrap it in one
-			if (!(err instanceof AppError)) {
-				err = new AppError(
-					err.message || 'Something went wrong',
-					err.statusCode || 500,
-					'INTERNAL_SERVER_ERROR'
-				);
-			}
-			next(err);
-		});
+		fn(req, res, next).catch(next);
 	};
 };
 
